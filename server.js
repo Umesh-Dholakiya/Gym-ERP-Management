@@ -93,6 +93,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.send("🚀 Gym ERP Backend is Running Successfully");
+});
+
 // ── 404 Fallback ──────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 
