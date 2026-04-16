@@ -4,7 +4,7 @@ const Attendance = require('../models/Attendance');
 const MembershipPlan = require('../models/MembershipPlan');
 const GymProfile = require('../models/GymProfile');
 const { paginateQuery } = require('../utils/queryHelper');
-const { createNotification } = require('../utils/notificationHelper');
+
 const { sendWhatsApp } = require('../services/communicationService');
 
 

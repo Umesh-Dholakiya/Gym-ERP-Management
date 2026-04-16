@@ -125,11 +125,17 @@ exports.webhookLeadCapture = async (req, res) => {
   try {
     const { gymId } = req.params;
     const { name, phone, fitnessGoal, source } = req.body;
-    
+
     // Simulate finding gym to ensure it exists
     const Gym = require('../models/Gym');
     const gym = await Gym.findById(gymId);
-    if (!gym) return res.status(404).json({ success: false, message: 'Gym not found' });
+
+    if (!gym) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gym not found'
+      });
+    }
 
     const lead = await Lead.create({
       name: name || 'Unknown Digital Lead',
@@ -143,18 +149,18 @@ exports.webhookLeadCapture = async (req, res) => {
     // Notify gym admins via sockets
     const io = req.app.get('io');
     if (io) {
-      const { createNotification } = require('../utils/notificationHelper');
-      await createNotification(io, {
-        title: 'New Automated Lead!',
-        message: `${lead.name} has shown interest via ${lead.source}.`,
-        type: 'System',
-        gymId: gymId,
-        metadata: { leadId: lead._id }
-      });
+      io.emit('newLead', lead); // optional emit event
     }
 
-    res.status(201).json({ success: true, data: lead });
-  } catch(error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(201).json({
+      success: true,
+      data: lead
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };

@@ -5,7 +5,7 @@ const GymProfile = require('../models/GymProfile');
 const Lead = require('../models/Lead');
 const Gym = require('../models/Gym');
 const { sendSMS, sendEmail, sendWhatsApp } = require('../services/communicationService');
-const { createNotification } = require('../utils/notificationHelper');
+
 
 
 // Helper to determine active communication channels
@@ -81,14 +81,7 @@ Team ${gymName}`;
 
         await communicateToMember(member, msg, 'Expiry Reminder', io);
         
-        // ── TRIGGER: In-App Notification
-        await createNotification(io, {
-          title: 'Membership Expiry Alert',
-          message: `${member.personalInfo.fullName}'s membership expires in 3 days.`,
-          type: 'Expiry',
-          gymId: member.gymId,
-          metadata: { memberId: member._id }
-        });
+
       }
 
       // ── 2. PAYMENT DUE REMINDER (Today is due date)
@@ -116,14 +109,7 @@ Team ${gymName}`;
 
         await communicateToMember(member, msg, 'Payment Reminder', io);
         
-        // ── TRIGGER: In-App Notification
-        await createNotification(io, {
-          title: 'Payment Due Alert',
-          message: `₹${member.membershipInfo.pendingAmount} payment due from ${member.personalInfo.fullName}.`,
-          type: 'Payment',
-          gymId: member.gymId,
-          metadata: { memberId: member._id }
-        });
+
       }
 
       console.log('Daily jobs executed successfully.');

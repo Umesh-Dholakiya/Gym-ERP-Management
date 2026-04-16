@@ -10,7 +10,15 @@ dotenv.config({ path: require('path').join(__dirname, '.env') });
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { 
+  cors: { 
+    origin: '*', 
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'], // Explicitly allow both
+  allowEIO3: true // Support older clients if any
+});
 app.set('io', io);
 
 // Handle socket connections dynamically
@@ -28,6 +36,20 @@ initAutomationJobs(io);
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// Request logging for debugging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 1000) {
+      console.warn(`⏳ ${req.method} ${req.originalUrl} took ${duration}ms`);
+    } else {
+      console.log(`📡 ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+    }
+  });
+  next();
+});
 
 const connectDB = require('./config/db.js');
 
@@ -48,10 +70,10 @@ const gymSettingsRoutes = require('./routes/gymSettingsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const marketingRoutes = require('./routes/marketingRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
+
 const searchRoutes = require('./routes/searchRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
-const subscriptionRoutes = require('./routes/subscriptionRoutes');
+
 const leadRoutes = require('./routes/leadRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
@@ -70,10 +92,10 @@ app.use('/api/gym-settings', gymSettingsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/marketing', marketingRoutes);
 app.use('/api/settings', settingsRoutes);
-app.use('/api/notifications', notificationRoutes);
+
 app.use('/api/search', searchRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/subscription', subscriptionRoutes);
+
 app.use('/api/leads', leadRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/expenses', expenseRoutes);
